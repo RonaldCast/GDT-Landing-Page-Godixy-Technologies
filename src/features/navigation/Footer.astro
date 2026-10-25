@@ -18,9 +18,7 @@ const year = new Date().getFullYear();
 <footer class="footer">
   <div class="container footer__grid">
     <div class="footer__brand">
-      <span class="logo-field">
-        <img src="/logo.png" alt="Godixy Technologies" width="160" height="58" loading="lazy" />
-      </span>
+      <img src="/logo-on-dark.png" alt="Godixy Technologies" width="160" height="55" loading="lazy" />
       <p>{t.footer.tagline}</p>
     </div>
 
@@ -80,18 +78,10 @@ const year = new Date().getFullYear();
     max-width: 360px;
   }
 
-  /* Style guide: on navy, the full-color logo sits inside a white field. */
-  .logo-field {
-    display: inline-flex;
-    width: fit-content;
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-white);
-    border-radius: var(--radius-card);
-  }
-
-  .logo-field img {
+  .footer__brand img {
     width: 140px;
     height: auto;
+    border-radius: 7px;
   }
 
   .footer__title {

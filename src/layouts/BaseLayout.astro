@@ -30,7 +30,9 @@ const ogImage = new URL('/og-logo.png', site).href;
     <meta name="description" content={description} />
     <meta name="theme-color" content="#101E38" />
     {noindex && <meta name="robots" content="noindex" />}
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="canonical" href={canonical} />
     {
       languages.map((l) => (
@@ -61,7 +63,7 @@ const ogImage = new URL('/og-logo.png', site).href;
         name: 'Godixy Technologies',
         legalName: 'Godixy Technologies EIRL',
         url: site.href,
-        logo: new URL('/logo.png', site).href,
+        logo: new URL('/logo.svg', site).href,
         email: 'hello@godixy.com',
       })}
     />
