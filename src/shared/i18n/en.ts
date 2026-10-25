@@ -82,6 +82,7 @@ export const en = {
     listLabel: 'Godixy services',
     outcomeLabel: 'What you get',
     cta: 'Talk about this service',
+    scrollHint: 'Keep scrolling to see each service.',
     items: [
       {
         id: sid('custom-software'),
@@ -184,6 +185,7 @@ export const en = {
     exitLabel: 'To move on',
     previous: 'Previous phase',
     next: 'Next phase',
+    scrollHint: 'Keep scrolling to move through each phase.',
     phases: [
       {
         title: 'Contact & qualification',

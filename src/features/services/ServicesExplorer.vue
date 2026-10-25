@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import type { Dictionary } from '@/shared/i18n/en';
 import { icons } from '@/shared/ui/icons';
 import { animateIn } from '@/shared/motion/animate-in';
+import { bindScrollStory, type ScrollStoryHandle } from '@/shared/motion/scroll-story';
 import { setServiceIntent } from '@/features/contact/service-intent';
 
 const props = defineProps<{ t: Dictionary['services'] }>();
@@ -10,9 +11,13 @@ const props = defineProps<{ t: Dictionary['services'] }>();
 const active = ref(0);
 const tabRefs = ref<HTMLButtonElement[]>([]);
 const panelRef = ref<HTMLElement | null>(null);
+const trackRef = ref<HTMLElement | null>(null);
+const stageRef = ref<HTMLElement | null>(null);
 const current = computed(() => props.t.items[active.value] ?? props.t.items[0]);
 
-async function select(index: number, focus = false) {
+let story: ScrollStoryHandle | null = null;
+
+async function apply(index: number, focus = false) {
   const count = props.t.items.length;
   const next = (index + count) % count;
   const changed = next !== active.value;
@@ -22,6 +27,10 @@ async function select(index: number, focus = false) {
     await nextTick();
     void animateIn(panelRef.value ? Array.from(panelRef.value.children) : null);
   }
+}
+
+function select(index: number, focus = false) {
+  void apply(index, focus).then(() => story?.syncTo(active.value));
 }
 
 function onKeydown(event: KeyboardEvent, index: number) {
@@ -43,61 +52,83 @@ function onKeydown(event: KeyboardEvent, index: number) {
 function talkAboutService() {
   if (current.value) setServiceIntent(current.value.id);
 }
+
+onMounted(() => {
+  if (!trackRef.value || !stageRef.value) return;
+  story = bindScrollStory({
+    track: trackRef.value,
+    stage: stageRef.value,
+    count: () => props.t.items.length,
+    onIndex: (index) => {
+      void apply(index);
+    },
+  });
+});
+
+onUnmounted(() => story?.destroy());
 </script>
 
 <template>
-  <div class="explorer">
-    <div class="explorer__tabs" role="tablist" :aria-label="t.listLabel" aria-orientation="vertical">
-      <button
-        v-for="(item, i) in t.items"
-        :id="`service-tab-${item.id}`"
-        :key="item.id"
-        ref="tabRefs"
-        type="button"
-        role="tab"
-        class="tab"
-        :aria-selected="i === active"
-        :aria-controls="`service-panel-${item.id}`"
-        :tabindex="i === active ? 0 : -1"
-        @click="select(i)"
-        @keydown="onKeydown($event, i)"
-      >
-        <span class="tab__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path v-for="d in icons[item.id]" :key="d" :d="d" />
-          </svg>
-        </span>
-        <span class="tab__text">
-          <span class="tab__index">0{{ i + 1 }}</span>
-          <span class="tab__title">{{ item.title }}</span>
-        </span>
-      </button>
-    </div>
+  <div ref="trackRef" class="story" :style="{ '--steps': t.items.length }">
+    <div ref="stageRef" class="story__stage">
+      <p class="story__hint">{{ t.scrollHint }}</p>
+      <div class="explorer">
+        <div class="explorer__tabs" role="tablist" :aria-label="t.listLabel" aria-orientation="vertical">
+          <button
+            v-for="(item, i) in t.items"
+            :id="`service-tab-${item.id}`"
+            :key="item.id"
+            ref="tabRefs"
+            type="button"
+            role="tab"
+            class="tab"
+            :aria-selected="i === active"
+            :aria-controls="`service-panel-${item.id}`"
+            :tabindex="i === active ? 0 : -1"
+            @click="select(i)"
+            @keydown="onKeydown($event, i)"
+          >
+            <span class="tab__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path v-for="d in icons[item.id]" :key="d" :d="d" />
+              </svg>
+            </span>
+            <span class="tab__text">
+              <span class="tab__index">0{{ i + 1 }}</span>
+              <span class="tab__title">{{ item.title }}</span>
+            </span>
+          </button>
+        </div>
 
-    <div
-      v-if="current"
-      :id="`service-panel-${current.id}`"
-      ref="panelRef"
-      class="panel"
-      role="tabpanel"
-      :aria-labelledby="`service-tab-${current.id}`"
-      tabindex="0"
-    >
-      <h3>{{ current.title }}</h3>
-      <p class="panel__summary">{{ current.summary }}</p>
-      <ul class="check-list">
-        <li v-for="point in current.points" :key="point">{{ point }}</li>
-      </ul>
-      <div class="panel__outcome">
-        <p class="panel__outcome-label">{{ t.outcomeLabel }}</p>
-        <p>{{ current.outcome }}</p>
+        <div
+          v-if="current"
+          :id="`service-panel-${current.id}`"
+          ref="panelRef"
+          class="panel"
+          role="tabpanel"
+          :aria-labelledby="`service-tab-${current.id}`"
+          tabindex="0"
+        >
+          <h3>{{ current.title }}</h3>
+          <p class="panel__summary">{{ current.summary }}</p>
+          <ul class="check-list">
+            <li v-for="point in current.points" :key="point">{{ point }}</li>
+          </ul>
+          <div class="panel__outcome">
+            <p class="panel__outcome-label">{{ t.outcomeLabel }}</p>
+            <p>{{ current.outcome }}</p>
+          </div>
+          <a class="panel__cta" href="#contact" @click="talkAboutService">
+            {{ t.cta }}
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path v-for="d in icons.arrow" :key="d" :d="d" />
+            </svg>
+          </a>
+        </div>
       </div>
-      <a class="panel__cta" href="#contact" @click="talkAboutService">
-        {{ t.cta }}
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path v-for="d in icons.arrow" :key="d" :d="d" />
-        </svg>
-      </a>
+    </div>
+    <div class="story__snaps" aria-hidden="true">
+      <span v-for="i in t.items.length" :key="i" class="story__snap"></span>
     </div>
   </div>
 </template>
@@ -182,6 +213,10 @@ function talkAboutService() {
 
 .tab[aria-selected='true'] .tab__title {
   color: var(--color-white);
+}
+
+.story[data-scroll-story='on'] .panel {
+  position: static;
 }
 
 .panel {

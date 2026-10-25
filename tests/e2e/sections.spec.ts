@@ -68,6 +68,38 @@ test('GDF timeline shows 10 phases with gates (AC-12)', async ({ page }) => {
   await expect(page.locator('#gdf-phase-panel').getByRole('button', { name: /next/i })).toBeDisabled();
 });
 
+test('desktop scroll advances service and GDF tabs', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await openLanding(page, '/en/#services');
+  await hydrated(page, '#service-tab-custom-software');
+  await expect(page.locator('#services .story')).toHaveAttribute('data-scroll-story', 'on');
+
+  await page.evaluate(() => {
+    const track = document.querySelector('#services .story');
+    const stage = track?.querySelector('.story__stage');
+    if (!(track instanceof HTMLElement) || !(stage instanceof HTMLElement)) return;
+    const header = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 72;
+    const travel = track.offsetHeight - stage.offsetHeight;
+    const top = window.scrollY + track.getBoundingClientRect().top - header + (3.5 / 6) * travel;
+    window.scrollTo(0, top);
+  });
+  await expect(page.locator('#service-tab-consulting')).toHaveAttribute('aria-selected', 'true');
+
+  await openLanding(page, '/en/#process');
+  await hydrated(page, '#gdf-step-0');
+  await expect(page.locator('#process .story')).toHaveAttribute('data-scroll-story', 'on');
+  await page.evaluate(() => {
+    const track = document.querySelector('#process .story');
+    const stage = track?.querySelector('.story__stage');
+    if (!(track instanceof HTMLElement) || !(stage instanceof HTMLElement)) return;
+    const header = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 72;
+    const travel = track.offsetHeight - stage.offsetHeight;
+    const top = window.scrollY + track.getBoundingClientRect().top - header + (4.5 / 10) * travel;
+    window.scrollTo(0, top);
+  });
+  await expect(page.locator('#gdf-step-4')).toHaveAttribute('aria-selected', 'true');
+});
+
 test('GDF tiers switch content (AC-13)', async ({ page }) => {
   await openLanding(page, '/en/#process');
   const lite = await hydrated(page, '#gdf-tier-0');

@@ -8,9 +8,9 @@ export async function animateIn(target: Element | Element[] | null | undefined, 
   const anime = await import('./anime');
   anime.animate(targets, {
     opacity: [0, 1],
-    translateY: [12, 0],
-    duration: 450,
-    ease: 'outCubic',
+    translateY: [20, 0],
+    duration: 600,
+    ease: 'outQuint',
     delay: anime.stagger(stagger),
   });
 }

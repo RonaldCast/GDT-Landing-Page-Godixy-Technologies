@@ -23,14 +23,21 @@ const { t } = Astro.props;
 <style>
   .process {
     position: relative;
-    overflow: hidden;
     isolation: isolate;
   }
 
   .process__glow {
     position: absolute;
-    inset: -20% -10% auto auto;
+    inset: 0;
     z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .process__glow::before {
+    content: '';
+    position: absolute;
+    inset: -20% -10% auto auto;
     width: 60%;
     aspect-ratio: 1;
     background: radial-gradient(circle, rgb(78 172 196 / 0.22), transparent 65%);

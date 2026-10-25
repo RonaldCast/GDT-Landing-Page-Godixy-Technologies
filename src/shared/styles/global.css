@@ -106,6 +106,58 @@ textarea {
   color: var(--color-white);
 }
 
+html[data-scroll-snap='story'] {
+  scroll-snap-type: y proximity;
+}
+
+.story[data-scroll-story='on'] {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh + (var(--steps, 1) - 1) * 68svh);
+}
+
+.story__snaps {
+  display: none;
+}
+
+.story[data-scroll-story='on'] .story__snaps {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  min-height: calc((var(--steps, 1) - 1) * 68svh);
+}
+
+.story__snap {
+  flex: 1;
+  pointer-events: none;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+}
+
+.story[data-scroll-story='on'] .story__stage {
+  position: sticky;
+  top: var(--header-height);
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-height: calc(100svh - var(--header-height));
+  padding-block: var(--space-5);
+}
+
+.story__hint {
+  display: none;
+  margin: 0;
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.story[data-scroll-story='on'] .story__hint {
+  display: block;
+}
+
 .visually-hidden {
   position: absolute !important;
   width: 1px;

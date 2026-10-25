@@ -38,8 +38,9 @@ export async function initReveal(root: ParentNode = document): Promise<void> {
         observer.unobserve(el);
         anime.animate(targetsOf(el), {
           opacity: [0, 1],
-          translateY: [24, 0],
-          duration: 700,
+          translateY: [48, 0],
+          scale: [0.98, 1],
+          duration: 800,
           ease: 'outExpo',
           delay: anime.stagger(80),
           onComplete: (self) => {

@@ -26,3 +26,9 @@ test('no horizontal overflow on a phone', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('phone does not pin service or process stories', async ({ page }) => {
+  await openLanding(page, '/en/');
+  await expect(page.locator('#services .story')).not.toHaveAttribute('data-scroll-story', 'on');
+  await expect(page.locator('#process .story')).not.toHaveAttribute('data-scroll-story', 'on');
+});

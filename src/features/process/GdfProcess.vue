@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import type { Dictionary } from '@/shared/i18n/en';
 import { animateIn } from '@/shared/motion/animate-in';
 import { prefersReducedMotion } from '@/shared/motion/prefers-motion';
+import { bindScrollStory, type ScrollStoryHandle } from '@/shared/motion/scroll-story';
 
 const props = defineProps<{ t: Dictionary['process'] }>();
 
@@ -11,8 +12,11 @@ const tier = ref(0);
 const stepRefs = ref<HTMLButtonElement[]>([]);
 const tierRefs = ref<HTMLButtonElement[]>([]);
 const trackRef = ref<HTMLElement | null>(null);
+const storyTrackRef = ref<HTMLElement | null>(null);
+const stageRef = ref<HTMLElement | null>(null);
 const detailRef = ref<HTMLElement | null>(null);
 const tierPanelRef = ref<HTMLElement | null>(null);
+let story: ScrollStoryHandle | null = null;
 
 const total = computed(() => props.t.phases.length);
 const phase = computed(() => props.t.phases[active.value]);
@@ -32,13 +36,20 @@ async function updateProgress(animate: boolean) {
   anime.animate(track, { '--progress': [from, ratio], duration: 500, ease: 'outCubic' });
 }
 
-async function selectPhase(index: number, focus = false) {
+async function applyPhase(index: number, focus = false) {
   const next = Math.min(Math.max(index, 0), total.value - 1);
-  if (next === active.value) return;
+  if (next === active.value) {
+    if (focus) stepRefs.value[next]?.focus();
+    return;
+  }
   active.value = next;
   if (focus) stepRefs.value[next]?.focus();
   await nextTick();
   void animateIn(detailRef.value ? Array.from(detailRef.value.children) : null, 30);
+}
+
+function selectPhase(index: number, focus = false) {
+  void applyPhase(index, focus).then(() => story?.syncTo(active.value));
 }
 
 async function selectTier(index: number, focus = false) {
@@ -77,7 +88,19 @@ function onTierKey(event: KeyboardEvent, index: number) {
 }
 
 watch(active, () => void updateProgress(true));
-onMounted(() => void updateProgress(false));
+onMounted(() => {
+  void updateProgress(false);
+  if (!storyTrackRef.value || !stageRef.value) return;
+  story = bindScrollStory({
+    track: storyTrackRef.value,
+    stage: stageRef.value,
+    count: () => total.value,
+    onIndex: (index) => {
+      void applyPhase(index);
+    },
+  });
+});
+onUnmounted(() => story?.destroy());
 </script>
 
 <template>
@@ -89,64 +112,72 @@ onMounted(() => void updateProgress(false));
       </li>
     </ul>
 
-    <div class="timeline">
-      <div ref="trackRef" class="track" aria-hidden="true"><span class="track__fill"></span></div>
-      <div class="steps" role="tablist" :aria-label="t.title">
-        <button
-          v-for="(item, i) in t.phases"
-          :id="`gdf-step-${i}`"
-          :key="item.title"
-          ref="stepRefs"
-          type="button"
-          role="tab"
-          class="step"
-          :class="{ 'step--done': i < active }"
-          :aria-selected="i === active"
-          aria-controls="gdf-phase-panel"
-          :tabindex="i === active ? 0 : -1"
-          @click="selectPhase(i)"
-          @keydown="onStepKey($event, i)"
-        >
-          <span class="step__dot">{{ String(i + 1).padStart(2, '0') }}</span>
-          <span class="step__title">{{ item.title }}</span>
-        </button>
-      </div>
-    </div>
+    <div ref="storyTrackRef" class="story" :style="{ '--steps': total }">
+      <div ref="stageRef" class="story__stage">
+        <p class="story__hint">{{ t.scrollHint }}</p>
+        <div class="timeline">
+          <div ref="trackRef" class="track" aria-hidden="true"><span class="track__fill"></span></div>
+          <div class="steps" role="tablist" :aria-label="t.title">
+            <button
+              v-for="(item, i) in t.phases"
+              :id="`gdf-step-${i}`"
+              :key="item.title"
+              ref="stepRefs"
+              type="button"
+              role="tab"
+              class="step"
+              :class="{ 'step--done': i < active }"
+              :aria-selected="i === active"
+              aria-controls="gdf-phase-panel"
+              :tabindex="i === active ? 0 : -1"
+              @click="selectPhase(i)"
+              @keydown="onStepKey($event, i)"
+            >
+              <span class="step__dot">{{ String(i + 1).padStart(2, '0') }}</span>
+              <span class="step__title">{{ item.title }}</span>
+            </button>
+          </div>
+        </div>
 
-    <div
-      v-if="phase"
-      id="gdf-phase-panel"
-      ref="detailRef"
-      class="detail"
-      role="tabpanel"
-      :aria-labelledby="`gdf-step-${active}`"
-    >
-      <div class="detail__meta">
-        <span class="badge">{{ t.phaseLabel }} {{ String(active + 1).padStart(2, '0') }}</span>
-        <span class="badge badge--gate">{{ gateFor(active) ? `${t.gateLabel} ${gateFor(active)}` : t.ongoingLabel }}</span>
-      </div>
-      <h3>{{ phase.title }}</h3>
-      <p class="detail__text">{{ phase.text }}</p>
-      <div class="detail__cols">
-        <div>
-          <p class="mini-label">{{ t.deliverablesLabel }}</p>
-          <ul class="check-list">
-            <li v-for="d in phase.deliverables" :key="d">{{ d }}</li>
-          </ul>
+        <div
+          v-if="phase"
+          id="gdf-phase-panel"
+          ref="detailRef"
+          class="detail"
+          role="tabpanel"
+          :aria-labelledby="`gdf-step-${active}`"
+        >
+          <div class="detail__meta">
+            <span class="badge">{{ t.phaseLabel }} {{ String(active + 1).padStart(2, '0') }}</span>
+            <span class="badge badge--gate">{{ gateFor(active) ? `${t.gateLabel} ${gateFor(active)}` : t.ongoingLabel }}</span>
+          </div>
+          <h3>{{ phase.title }}</h3>
+          <p class="detail__text">{{ phase.text }}</p>
+          <div class="detail__cols">
+            <div>
+              <p class="mini-label">{{ t.deliverablesLabel }}</p>
+              <ul class="check-list">
+                <li v-for="d in phase.deliverables" :key="d">{{ d }}</li>
+              </ul>
+            </div>
+            <div class="exit">
+              <p class="mini-label">{{ t.exitLabel }}</p>
+              <p>{{ phase.exit }}</p>
+            </div>
+          </div>
+          <div class="detail__nav">
+            <button type="button" class="nav-btn" :disabled="active === 0" @click="selectPhase(active - 1)">
+              <span aria-hidden="true">←</span> {{ t.previous }}
+            </button>
+            <span class="detail__count" aria-hidden="true">{{ active + 1 }} / {{ total }}</span>
+            <button type="button" class="nav-btn" :disabled="active === total - 1" @click="selectPhase(active + 1)">
+              {{ t.next }} <span aria-hidden="true">→</span>
+            </button>
+          </div>
         </div>
-        <div class="exit">
-          <p class="mini-label">{{ t.exitLabel }}</p>
-          <p>{{ phase.exit }}</p>
-        </div>
       </div>
-      <div class="detail__nav">
-        <button type="button" class="nav-btn" :disabled="active === 0" @click="selectPhase(active - 1)">
-          <span aria-hidden="true">←</span> {{ t.previous }}
-        </button>
-        <span class="detail__count" aria-hidden="true">{{ active + 1 }} / {{ total }}</span>
-        <button type="button" class="nav-btn" :disabled="active === total - 1" @click="selectPhase(active + 1)">
-          {{ t.next }} <span aria-hidden="true">→</span>
-        </button>
+      <div class="story__snaps" aria-hidden="true">
+        <span v-for="i in total" :key="i" class="story__snap"></span>
       </div>
     </div>
 
@@ -200,6 +231,30 @@ onMounted(() => void updateProgress(false));
 .gdf {
   display: grid;
   gap: var(--space-7);
+}
+
+.story__hint {
+  color: var(--color-teal);
+}
+
+.story[data-scroll-story='on'] .story__stage {
+  min-height: 0;
+  gap: var(--space-3);
+  padding-block: var(--space-3) 0;
+}
+
+.story[data-scroll-story='on'] + .tiers {
+  margin-top: calc(var(--space-3) - var(--space-7));
+  padding-top: var(--space-4);
+}
+
+.story[data-scroll-story='on'] .detail {
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.story[data-scroll-story='on'] .detail h3 {
+  font-size: 1.375rem;
 }
 
 .principles {

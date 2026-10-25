@@ -80,6 +80,7 @@ export const es: Dictionary = {
     listLabel: 'Servicios de Godixy',
     outcomeLabel: 'Lo que obtienes',
     cta: 'Conversemos sobre este servicio',
+    scrollHint: 'Sigue bajando para ver cada servicio.',
     items: [
       {
         id: 'custom-software',
@@ -182,6 +183,7 @@ export const es: Dictionary = {
     exitLabel: 'Para avanzar',
     previous: 'Fase anterior',
     next: 'Fase siguiente',
+    scrollHint: 'Sigue bajando para recorrer cada fase.',
     phases: [
       {
         title: 'Contacto y calificación',

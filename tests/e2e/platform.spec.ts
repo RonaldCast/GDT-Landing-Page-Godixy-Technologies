@@ -56,6 +56,8 @@ test('reduced motion: static hero and content visible (AC-05)', async ({ browser
   await page.waitForLoadState('networkidle');
   await expect(page.locator('.scene')).not.toHaveClass(/scene--live/);
   await expect(page.locator('.scene__fallback')).toBeVisible();
+  await hydrated(page, '#service-tab-custom-software');
+  await expect(page.locator('#services .story')).not.toHaveAttribute('data-scroll-story', 'on');
   await page.locator('#faq').scrollIntoViewIfNeeded();
   await expect(page.locator('#faq h2')).toHaveCSS('opacity', '1');
   await context.close();
