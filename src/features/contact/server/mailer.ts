@@ -6,6 +6,7 @@ let transporter: Transporter | null = null;
 
 /** Returns a sender bound to the configured SMTP transport, or null when SMTP is not configured. */
 export function getMailSender(): ((email: ContactEmail) => Promise<void>) | null {
+
   if (!SMTP_HOST) return null;
 
   transporter ??= nodemailer.createTransport({

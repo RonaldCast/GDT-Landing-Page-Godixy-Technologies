@@ -79,7 +79,6 @@ async function onSubmit() {
 
   status.value = 'submitting';
   const { error } = await actions.contact.send(data);
-
   if (!error) {
     status.value = 'success';
     await nextTick();
