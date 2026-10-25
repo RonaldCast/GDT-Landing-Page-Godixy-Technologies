@@ -1,0 +1,129 @@
+---
+import type { Dictionary } from '@/shared/i18n/en';
+import Icon from '@/shared/ui/Icon.astro';
+import type { IconName } from '@/shared/ui/icons';
+
+interface Props {
+  t: Dictionary['pillars'];
+}
+
+const { t } = Astro.props;
+const pillarIcons: IconName[] = ['scope', 'continuity', 'verify'];
+---
+
+<section class="pillars" aria-labelledby="pillars-title">
+  <div class="container">
+    <div class="pillars__head" data-reveal>
+      <p class="label" data-reveal-item>{t.label}</p>
+      <h2 id="pillars-title" data-reveal-item>{t.title}</h2>
+    </div>
+    <ol class="pillars__grid" data-reveal>
+      {
+        t.items.map((item, i) => (
+          <li class="pillar" data-reveal-item>
+            <span class="pillar__icon">
+              <Icon name={pillarIcons[i] ?? 'check'} />
+            </span>
+            <span class="pillar__index" aria-hidden="true">
+              0{i + 1}
+            </span>
+            <p class="pillar__value">{item.value}</p>
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .pillars {
+    padding-block: var(--space-8);
+    background: var(--color-surface);
+    border-block: 1px solid var(--color-border);
+  }
+
+  .pillars__head {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 720px;
+    margin-bottom: var(--space-6);
+  }
+
+  .label {
+    font-size: var(--text-label);
+    font-weight: 500;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-teal-text);
+  }
+
+  .pillars__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+  }
+
+  .pillar {
+    position: relative;
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    padding: var(--space-6);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-panel);
+    transition:
+      border-color var(--duration-base) var(--ease-out),
+      box-shadow var(--duration-base) var(--ease-out),
+      transform var(--duration-base) var(--ease-out);
+  }
+
+  .pillar:hover {
+    border-color: var(--color-teal);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .pillar__icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-panel);
+    background: var(--color-soft-teal);
+    color: var(--color-teal-text);
+  }
+
+  .pillar__index {
+    position: absolute;
+    top: var(--space-5);
+    right: var(--space-5);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-border-strong);
+  }
+
+  .pillar p {
+    color: var(--color-muted);
+  }
+
+  .pillar .pillar__value {
+    margin-bottom: calc(var(--space-2) * -1);
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-teal-text);
+  }
+
+  @media (max-width: 860px) {
+    .pillars__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

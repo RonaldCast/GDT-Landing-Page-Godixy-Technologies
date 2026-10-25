@@ -1,0 +1,123 @@
+---
+import type { GetStaticPaths } from 'astro';
+import LanguageSwitcher from '@/features/navigation/LanguageSwitcher.vue';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { languages, type Lang } from '@/shared/i18n/config';
+import { getDictionary, localizedPath } from '@/shared/i18n/utils';
+
+export const getStaticPaths = (() => languages.map((lang) => ({ params: { lang } }))) satisfies GetStaticPaths;
+
+const lang = Astro.params.lang as Lang;
+const t = getDictionary(lang);
+const p = t.privacy;
+const updated = new Date('2026-10-25T12:00:00Z');
+const updatedText = new Intl.DateTimeFormat(lang, { dateStyle: 'long', timeZone: 'UTC' }).format(updated);
+const home = localizedPath(lang);
+---
+
+<BaseLayout lang={lang} title={`${p.title} | Godixy Technologies`} description={p.description} path="privacy/">
+  <a class="skip-link" href="#main">{t.nav.skipToContent}</a>
+  <header class="bar">
+    <div class="container bar__inner">
+      <a href={home} class="logo"><img src="/logo.png" alt="Godixy Technologies" width="160" height="58" /></a>
+      <LanguageSwitcher client:idle current={lang} label={t.nav.language} path="privacy/" />
+    </div>
+  </header>
+
+  <main id="main" class="container privacy">
+    <h1>{p.title}</h1>
+    <p class="lead">{p.intro}</p>
+    <p class="updated">{p.updatedLabel}: <time datetime={updated.toISOString().slice(0, 10)}>{updatedText}</time></p>
+
+    {
+      p.sections.map((section) => (
+        <section>
+          <h2>{section.title}</h2>
+          <p>{section.text}</p>
+        </section>
+      ))
+    }
+
+    <p class="contact">
+      <a href={`mailto:${t.contact.email}`}>{t.contact.email}</a>
+    </p>
+    <p><a href={home}>← {p.back}</a></p>
+  </main>
+
+  <footer class="container foot">
+    <p>© {new Date().getFullYear()} {t.footer.legalName}. {t.footer.rights}</p>
+  </footer>
+</BaseLayout>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: var(--space-4);
+    top: -100px;
+    z-index: 100;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-navy);
+    color: var(--color-white);
+    border-radius: var(--radius-card);
+  }
+
+  .skip-link:focus {
+    top: var(--space-3);
+  }
+
+  .bar {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .bar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--header-height);
+  }
+
+  .logo img {
+    width: 132px;
+    height: auto;
+  }
+
+  .privacy {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 760px;
+    padding-block: var(--space-8);
+  }
+
+  h1 {
+    font-size: var(--text-h2);
+  }
+
+  h2 {
+    font-size: var(--text-h4, 1.25rem);
+    margin-bottom: var(--space-2);
+  }
+
+  .lead {
+    font-size: var(--text-lead);
+  }
+
+  .updated,
+  section p {
+    color: var(--color-muted);
+  }
+
+  a {
+    color: var(--color-teal-text);
+  }
+
+  .contact a {
+    font-weight: 600;
+  }
+
+  .foot {
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+</style>

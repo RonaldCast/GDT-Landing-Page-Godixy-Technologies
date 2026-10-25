@@ -1,0 +1,189 @@
+---
+import type { Lang } from '@/shared/i18n/config';
+import type { Dictionary } from '@/shared/i18n/en';
+import Button from '@/shared/ui/Button.astro';
+import LanguageSwitcher from './LanguageSwitcher.vue';
+import MobileNav from './MobileNav.vue';
+import { buildNavItems } from './nav-items';
+
+interface Props {
+  lang: Lang;
+  nav: Dictionary['nav'];
+}
+
+const { lang, nav } = Astro.props;
+const items = buildNavItems(nav);
+---
+
+<a class="skip-link" href="#main">{nav.skipToContent}</a>
+<header class="site-header" data-header>
+  <div class="container site-header__inner">
+    <a class="brand" href={`/${lang}/`} aria-label="Godixy Technologies">
+      <img src="/logo.png" alt="Godixy Technologies" width="160" height="58" />
+    </a>
+
+    <nav class="desktop-nav" aria-label={nav.primary}>
+      <ul>
+        {
+          items.map((item) => (
+            <li>
+              <a href={item.href} data-nav-link={item.id}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <LanguageSwitcher client:idle current={lang} label={nav.language} />
+      <Button href="#contact" class="header-cta">{nav.cta}</Button>
+    </div>
+
+    <div class="mobile-only">
+      <MobileNav
+        client:idle
+        items={items}
+        ctaLabel={nav.cta}
+        openLabel={nav.openMenu}
+        closeLabel={nav.closeMenu}
+        navLabel={nav.primary}
+      >
+        <LanguageSwitcher client:idle current={lang} label={nav.language} />
+      </MobileNav>
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  const links = new Map(
+    Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]')).map((a) => [a.dataset.navLink, a]),
+  );
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const link = links.get(entry.target.id);
+        if (!link) continue;
+        if (entry.isIntersecting) {
+          links.forEach((l) => l.removeAttribute('aria-current'));
+          link.setAttribute('aria-current', 'location');
+        }
+      }
+    },
+    { rootMargin: '-45% 0px -50% 0px' },
+  );
+  links.forEach((_, id) => {
+    const section = id ? document.getElementById(id) : null;
+    if (section) observer.observe(section);
+  });
+</script>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: var(--space-4);
+    top: -100px;
+    z-index: 100;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-card);
+    background: var(--color-navy);
+    color: var(--color-white);
+    font-weight: 600;
+  }
+
+  .skip-link:focus {
+    top: var(--space-3);
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--header-height);
+    background: rgb(255 255 255 / 0.85);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid transparent;
+    transition:
+      border-color var(--duration-base) var(--ease-out),
+      box-shadow var(--duration-base) var(--ease-out);
+  }
+
+  .site-header.is-scrolled {
+    border-bottom-color: var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .site-header__inner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+
+  .brand img {
+    width: 132px;
+    height: auto;
+  }
+
+  .desktop-nav ul {
+    list-style: none;
+    display: flex;
+    gap: var(--space-1);
+  }
+
+  .desktop-nav a {
+    display: inline-block;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-pill);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    text-decoration: none;
+    transition:
+      color var(--duration-fast),
+      background-color var(--duration-fast);
+  }
+
+  .desktop-nav a:hover,
+  .desktop-nav a[aria-current] {
+    color: var(--color-navy);
+    background: var(--color-surface);
+  }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .mobile-only {
+    display: none;
+  }
+
+  @media (max-width: 1080px) {
+    .desktop-nav {
+      display: none;
+    }
+
+    .site-header__actions {
+      margin-left: auto;
+    }
+
+    .mobile-only {
+      display: block;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .site-header__actions {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,66 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Button from '@/shared/ui/Button.astro';
+import { getDictionary } from '@/shared/i18n/utils';
+
+const en = getDictionary('en');
+const es = getDictionary('es');
+---
+
+<BaseLayout lang="en" title={`${en.notFound.title} | Godixy Technologies`} description={en.notFound.text} noindex>
+  <main id="main" class="not-found">
+    <a href="/" class="logo"><img src="/logo.png" alt="Godixy Technologies" width="160" height="58" /></a>
+    <p class="code">404</p>
+    <div class="copy">
+      <h1>{en.notFound.title}</h1>
+      <p>{en.notFound.text}</p>
+      <Button href="/en/">{en.notFound.cta}</Button>
+    </div>
+    <div class="copy" lang="es">
+      <h2>{es.notFound.title}</h2>
+      <p>{es.notFound.text}</p>
+      <Button href="/es/" variant="secondary">{es.notFound.cta}</Button>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found {
+    min-height: 100vh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--space-6);
+    padding: var(--space-7) var(--space-5);
+    text-align: center;
+    background: var(--color-surface);
+  }
+
+  .logo img {
+    width: 150px;
+    height: auto;
+  }
+
+  .code {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--color-teal);
+  }
+
+  .copy {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: center;
+    max-width: 420px;
+  }
+
+  h1,
+  h2 {
+    font-size: var(--text-h2);
+  }
+
+  .copy p {
+    color: var(--color-muted);
+  }
+</style>

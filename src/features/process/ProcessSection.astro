@@ -1,0 +1,38 @@
+---
+import type { Dictionary } from '@/shared/i18n/en';
+import SectionHeader from '@/shared/ui/SectionHeader.astro';
+import GdfProcess from './GdfProcess.vue';
+
+interface Props {
+  t: Dictionary['process'];
+}
+
+const { t } = Astro.props;
+---
+
+<section id="process" class="section section--navy process" aria-labelledby="process-title">
+  <div class="process__glow" aria-hidden="true"></div>
+  <div class="container">
+    <SectionHeader id="process-title" label={t.label} title={t.title} intro={t.intro} tone="dark" />
+    <div data-reveal>
+      <GdfProcess client:visible t={t} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .process {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .process__glow {
+    position: absolute;
+    inset: -20% -10% auto auto;
+    z-index: -1;
+    width: 60%;
+    aspect-ratio: 1;
+    background: radial-gradient(circle, rgb(78 172 196 / 0.22), transparent 65%);
+  }
+</style>

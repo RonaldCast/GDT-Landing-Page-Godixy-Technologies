@@ -1,0 +1,87 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'a'> {
+  href: string;
+  variant?: 'primary' | 'secondary' | 'teal' | 'ghost-light';
+  size?: 'md' | 'lg';
+}
+
+const { href, variant = 'primary', size = 'md', class: className, ...rest } = Astro.props;
+---
+
+<a href={href} class:list={['btn', `btn--${variant}`, `btn--${size}`, className]} {...rest}>
+  <slot />
+</a>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color var(--duration-base) var(--ease-out),
+      color var(--duration-base) var(--ease-out),
+      border-color var(--duration-base) var(--ease-out),
+      transform var(--duration-base) var(--ease-out),
+      box-shadow var(--duration-base) var(--ease-out);
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn--lg {
+    min-height: 52px;
+    padding: var(--space-4) var(--space-6);
+    font-size: 1rem;
+  }
+
+  .btn--primary {
+    background: var(--color-navy);
+    color: var(--color-white);
+  }
+
+  .btn--primary:hover {
+    background: var(--color-navy-800);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn--secondary {
+    background: var(--color-white);
+    color: var(--color-navy);
+    border-color: var(--color-border-strong);
+  }
+
+  .btn--secondary:hover {
+    border-color: var(--color-navy);
+  }
+
+  .btn--teal {
+    background: var(--color-teal);
+    color: var(--color-navy);
+  }
+
+  .btn--teal:hover {
+    background: #6cbdd1;
+  }
+
+  .btn--ghost-light {
+    color: var(--color-white);
+    border-color: rgb(255 255 255 / 0.35);
+  }
+
+  .btn--ghost-light:hover {
+    border-color: var(--color-white);
+  }
+</style>

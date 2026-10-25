@@ -1,0 +1,20 @@
+---
+import type { Dictionary } from '@/shared/i18n/en';
+import SectionHeader from '@/shared/ui/SectionHeader.astro';
+import ServicesExplorer from './ServicesExplorer.vue';
+
+interface Props {
+  t: Dictionary['services'];
+}
+
+const { t } = Astro.props;
+---
+
+<section id="services" class="section" aria-labelledby="services-title">
+  <div class="container">
+    <SectionHeader id="services-title" label={t.label} title={t.title} intro={t.intro} />
+    <div data-reveal>
+      <ServicesExplorer client:visible t={t} />
+    </div>
+  </div>
+</section>

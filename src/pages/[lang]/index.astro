@@ -1,0 +1,44 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import AboutSection from '@/features/about/AboutSection.astro';
+import AudienceSection from '@/features/audience/AudienceSection.astro';
+import ContactSection from '@/features/contact/ContactSection.astro';
+import EngagementSection from '@/features/engagement/EngagementSection.astro';
+import FaqSection from '@/features/faq/FaqSection.astro';
+import HeroSection from '@/features/hero/HeroSection.astro';
+import TrustPillars from '@/features/hero/TrustPillars.astro';
+import Footer from '@/features/navigation/Footer.astro';
+import Header from '@/features/navigation/Header.astro';
+import ProcessSection from '@/features/process/ProcessSection.astro';
+import ServicesSection from '@/features/services/ServicesSection.astro';
+import { languages, type Lang } from '@/shared/i18n/config';
+import { getDictionary } from '@/shared/i18n/utils';
+
+export const getStaticPaths = (() => languages.map((lang) => ({ params: { lang } }))) satisfies GetStaticPaths;
+
+const lang = Astro.params.lang as Lang;
+const t = getDictionary(lang);
+---
+
+<BaseLayout lang={lang} title={t.meta.title} description={t.meta.description}>
+  <Header lang={lang} nav={t.nav} />
+  <main id="main" tabindex="-1">
+    <HeroSection t={t.hero} />
+    <TrustPillars t={t.pillars} />
+    <ServicesSection t={t.services} />
+    <ProcessSection t={t.process} />
+    <AudienceSection t={t.audience} />
+    <AboutSection t={t.about} />
+    <EngagementSection t={t.engagement} />
+    <FaqSection t={t.faq} />
+    <ContactSection t={t.contact} lang={lang} />
+  </main>
+  <Footer lang={lang} t={t} />
+</BaseLayout>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+</style>
