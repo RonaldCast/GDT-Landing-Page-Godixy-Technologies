@@ -35,6 +35,9 @@ export const es: Dictionary = {
     highlights: ['Alcance explícito por escrito', 'Criterios de aceptación por hito', 'Soporte después del go-live'],
     sceneLabel: 'Ilustración animada de bloques modulares inspirados en el logo de Godixy',
   },
+  intro: {
+    status: 'Cargando Godixy Technologies',
+  },
   pillars: {
     label: 'Por qué Godixy',
     title: 'Un modelo de entrega basado en compromisos verificables',

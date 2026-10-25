@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { waitForIntroDone } from '@/features/intro/intro-state';
 import { isLowPowerDevice, prefersReducedMotion, supportsWebGL } from '@/shared/motion/prefers-motion';
 import { logoBlocks, satelliteBlocks, toSvgRects } from './blocks';
 
@@ -16,6 +17,7 @@ onMounted(async () => {
   const container = containerRef.value;
   const canvas = canvasRef.value;
   if (!container || !canvas) return;
+  await waitForIntroDone();
   if (prefersReducedMotion() || isLowPowerDevice() || !supportsWebGL()) return;
 
   try {

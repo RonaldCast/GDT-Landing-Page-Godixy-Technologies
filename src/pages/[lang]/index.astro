@@ -6,6 +6,7 @@ import AudienceSection from '@/features/audience/AudienceSection.astro';
 import ContactSection from '@/features/contact/ContactSection.astro';
 // import EngagementSection from '@/features/engagement/EngagementSection.astro';
 import FaqSection from '@/features/faq/FaqSection.astro';
+import IntroOverlay from '@/features/intro/IntroOverlay.astro';
 import HeroSection from '@/features/hero/HeroSection.astro';
 import TrustPillars from '@/features/hero/TrustPillars.astro';
 import Footer from '@/features/navigation/Footer.astro';
@@ -21,7 +22,8 @@ const lang = Astro.params.lang as Lang;
 const t = getDictionary(lang);
 ---
 
-<BaseLayout lang={lang} title={t.meta.title} description={t.meta.description}>
+<BaseLayout lang={lang} title={t.meta.title} description={t.meta.description} intro>
+  <IntroOverlay status={t.intro.status} />
   <Header lang={lang} nav={t.nav} />
   <main id="main" tabindex="-1">
     <HeroSection t={t.hero} />

@@ -11,6 +11,7 @@ Single page, anchor IDs identical in both locales; locale routes `/` (EN) and `/
 | # | Section | Anchor | Island? | Primary goal |
 |---|---|---|---|---|
 | 0 | Skip link + sticky header | — | Vue (menu, lang) | Orient, navigate, CTA |
+| 0a | Home intro overlay | — | Vue + Three.js (home only) | Brand mark assembles, then yields to the hero |
 | 1 | Hero | `#top` | Vue + Three.js | Value prop, "Start a project" |
 | 2 | Trust pillars | `#trust` | static + anime | Explicit scope, verifiable delivery, continuous support |
 | 3 | Services explorer (6) | `#services` | Vue tabs | Find a matching service |
@@ -31,6 +32,12 @@ Primary flow: Hero → Services → Process → Engagement → Contact. Every se
 [0] HEADER (sticky, 72px, white; border-bottom + shadow after 8px scroll)
 | [Logo]   Services Process Who About Engagement FAQ   [EN|ES] [Start a project] |
 Mobile (<768): [Logo] .............. [EN|ES] [☰]  -> full-height sheet, links stacked, CTA bottom.
+
+[0a] HOME INTRO (every visit to `/en/` and `/es/` only — not privacy/404)
+Full-viewport navy (#101E38) overlay, z-index above the header. Center: Three.js
+logoBlocks assemble into the Godixy mark, then crossfade to `/icon.png`.
+Skip control bottom-center. Overlay exits upward; then the hero rises.
+Reduced-motion / no-JS: overlay never shown; hero is visible on first paint.
 
 [1] HERO (min-h 88vh, white -> soft-teal gradient bottom)
 | LABEL: SOFTWARE DELIVERY, VERIFIED     |                                  |
@@ -89,6 +96,8 @@ All interactive elements: min target 44×44, visible `:focus-visible` ring (see 
 | Text input / select / textarea | border `--color-border-strong` | border navy | ring + border navy | — | readonly during submit | green check icon | red border, icon + message below, `aria-invalid` | placeholder is hint only, label always visible |
 | Form (whole) | idle | — | — | — | button loading, fields readonly | panel replaced by success message (focus moved to it) | top error summary listing links to fields; network error banner + retry | — |
 | Hero canvas | animated | parallax | — | — | static poster until WebGL ready | — | WebGL fail → static poster | — |
+| Home intro overlay | navy full-viewport, mark assembling | — | skip button ring (teal on navy) | — | WebGL assembling | overlay gone, hero rising | WebGL fail → static `/icon.png` then exit | — |
+| Intro skip | white text, navy | underline | teal ring on navy | pressed | — | — | — | — |
 | Tag / pill | soft-teal bg, text-teal | — | — | — | — | — | — | — |
 
 Validation: on blur after first edit, and on submit. Messages localized; email format and required only. Honeypot field (hidden, `aria-hidden`) for spam.
@@ -99,10 +108,13 @@ Tokens: `--dur-fast 150ms`, `--dur-base 250ms`, `--dur-slow 600ms`, `--dur-hero 
 
 | What | Trigger | Property | Duration / easing | Stagger |
 |---|---|---|---|---|
+| Home intro assemble | first paint on `/en/` `/es/` when motion allowed | `logoBlocks` scatter → home (Three.js) | 1600 outCubic (incl. stagger) | 40ms / block, last block home at 1600 |
+| Home intro mark hold | assemble complete | canvas fade → `/icon.png` | 300 linear | — |
+| Home intro exit | hold complete or Skip / Escape | overlay opacity 1→0, translateY 0→-8% | 400 outQuint | — |
 | Section reveal (label, H2, intro, cards) | IntersectionObserver 20% visible, once | opacity 0→1, translateY 24→0 | 600 outQuint | 80ms per child, max 6 |
-| Hero copy intro | load | opacity, translateY 16→0 | 600 outQuint | 100ms |
+| Hero copy + visual intro | `data-intro=done` (or first paint if no intro) | opacity 0→1, translateY 24→0 | 800 outQuint | 80ms |
 | Hero counters | in view, once | number 0→target | 1200 outQuint | 150ms |
-| Hero blocks (Three.js) | load + pointermove | blocks assemble from offset; parallax rotation ±6°, translate ±12px, lerp 0.08 | assemble 1200; idle float 6s loop | 60ms per block |
+| Hero blocks (Three.js) | after intro done + pointermove | blocks assemble from offset; parallax rotation ±6°, translate ±12px, lerp 0.08 | assemble 1200; idle float 6s loop | 60ms per block |
 | Header shadow | scroll > 8px | box-shadow, bg opacity | 150 ease-out | — |
 | Service tab change | click / arrow keys | panel crossfade + translateX 8→0 | 250 outQuint | list items 40ms |
 | Timeline progress | section in view | rail fill scaleX 0→1 (vertical: scaleY) | 1200 inOutCubic | nodes 80ms |
@@ -112,9 +124,37 @@ Tokens: `--dur-fast 150ms`, `--dur-base 250ms`, `--dur-slow 600ms`, `--dur-hero 
 | Buttons / cards | hover | translateY, shadow, bg | 150 ease-out | — |
 | Form success | submit 2xx | panel fade-in, check icon draw | 600 outQuint | — |
 
-Rules: animate only `transform`/`opacity` (plus accordion grid-rows); no scroll-jacking; content is visible without JS (reveal classes added by JS only). Three.js: pause on `visibilitychange` and when hero out of view; cap DPR at 2; lazy-load the island (`client:visible`); target ≤ 60 blocks.
+Rules: animate only `transform`/`opacity` (plus accordion grid-rows); no scroll-jacking after the intro; content is visible without JS (reveal classes added by JS only). Three.js: pause on `visibilitychange` and when hero out of view; cap DPR at 2; **one WebGL renderer at a time** (dispose the intro renderer before hydrating the hero scene); target ≤ 60 blocks.
 
-**prefers-reduced-motion: reduce** — no Three.js load (static poster image of blocks), no parallax, reveals become instant (opacity only, 0ms), counters show final value, timeline rail drawn fully, accordion/tab changes instant. Also honour an in-page "pause animation" button on the hero (WCAG 2.2.2).
+### 4.1 Home intro (increment 2026-10-25)
+
+Approved plan: every visit to the landing (`/en/`, `/es/`). Privacy and 404 do not play it. Visual approval of this increment is not G7.
+
+**First paint.** An inline script in `<head>` (home only) sets `document.documentElement.dataset.intro` to `playing` or, when `prefers-reduced-motion: reduce`, `done`. The overlay markup exists in the home HTML but is shown only while `playing` or `exiting`. Without JS the attribute is absent, the overlay stays hidden, and the hero is visible.
+
+**Sequence (2.2–2.6 s).** `playing` (navy `#101E38` covers the viewport, `overflow: hidden`) → `logoBlocks` only (no satellites) assemble in 1600 ms → hold 300 ms while the canvas crossfades to `/icon.png` → `exiting` (overlay moves up and fades, 400 ms) → `done` + event `godixy:intro-done` → hero copy and `HeroScene` rise (`translateY` 24→0, 800 ms). Then the hero island may load Three.js.
+
+**Skip.** Control always visible: EN “Skip intro” / ES “Saltar intro”. `Escape` does the same. Skip is WCAG 2.2.2 (pause/stop) for this non-essential motion. After skip or completion, move focus to `#hero-title` (`tabindex="-1"`).
+
+**Fallbacks (no invented research; same policy as ADR-004).**
+
+| Condition | Overlay | Three.js | Hero |
+|---|---|---|---|
+| `prefers-reduced-motion: reduce` | not shown (`done` at first paint) | none | visible immediately |
+| Low-power or no WebGL (detected after hydrate) | static `/icon.png`, then exit | none | rises after short exit |
+| JS disabled | not shown | none | visible |
+| Privacy / 404 | not in the DOM | none | n/a |
+
+**Acceptance notes for Sofía / Isabel**
+
+- AC-INTRO-1 — `/en/` and `/es/` show the overlay when motion is allowed; `#hero-title` is not the first thing a sighted user sees.
+- AC-INTRO-2 — Skip and Escape set `data-intro=done`, hide the overlay, reveal the hero, and focus `#hero-title`.
+- AC-INTRO-3 — Reduced motion and no-JS: overlay not shown; hero readable.
+- AC-INTRO-4 — `/en/privacy/`, `/es/privacy/`, and 404 have no `[data-intro-root]`.
+- AC-INTRO-5 — Intro renderer is disposed before the hero scene imports Three.js.
+- AC-INTRO-6 — Unskipped intro finishes in 2.2–2.6 s before the hero rise starts.
+
+**prefers-reduced-motion: reduce** — no Three.js load (static poster image of blocks), no home intro, no parallax, reveals become instant (opacity only, 0ms), counters show final value, timeline rail drawn fully, accordion/tab changes instant. Skip on the intro covers WCAG 2.2.2 for that sequence; keep the in-page pause control on the looping hero scene.
 
 ## 5. Token mapping (CSS custom properties)
 
@@ -169,6 +209,7 @@ Contrast (computed with the WCAG relative-luminance formula):
 - **Form**: visible `<label>` per field, `autocomplete` (name, email, organization), required marked with text "(required)", errors linked by `aria-describedby`, error summary focused on failed submit, success message in `role="status"`.
 - **Language**: `<html lang="en|es">`; switcher links use `hreflang` and `lang`; `<link rel="alternate" hreflang>` in head.
 - **Canvas**: `aria-hidden="true"`; hero meaning carried by text. Icons decorative unless standalone.
+- **Home intro**: `role="dialog"` + `aria-modal="true"` + `aria-labelledby` pointing at a visually hidden `role="status"` (EN/ES loading text). Skip is the only focusable control (44×44). On navy, focus ring is `#4EACC4`. After dismiss, overlay is `display: none`, `inert`, and `aria-hidden`. Do not play on inner pages.
 - **Text**: rem units, works at 200% zoom and 320px width without horizontal scroll; line length ≤ 70ch.
 
 ## 7. Open decisions (human approval needed for G5)
@@ -179,3 +220,18 @@ Contrast (computed with the WCAG relative-luminance formula):
 4. Hero poster image for reduced-motion and WebGL fallback (to be rendered from the Three.js scene).
 
 Next owner: Sofía Herrera (frontend) after G5 approval; Isabel Medina to derive a11y/motion acceptance checks from §3–§6.
+
+---
+
+## Handoff — g5-intro-spec (F5 increment)
+
+- **Task ID:** g5-intro-spec
+- **GDF tier / phase:** Lite / F5 (design increment on G5 already approved 2026-10-25). This increment is **not** self-approved as a new G5 or G7.
+- **Owner:** Marcos Peralta
+- **Confirmed inputs:** Approved plan “Logo intro Three.js”; existing §4 motion tokens; ADR-004; `logoBlocks` in `src/features/hero/blocks.ts`; `/icon.png`.
+- **Deliverable:** this file, §3 inventory rows, §4 table + §4.1, §6 intro bullet.
+- **Evidence:** timings and fallbacks derived from the approved plan and ADR-004; no new user research.
+- **Assumptions:** “Hero image” means the existing hero visual + copy, not a new photograph. Frequency is every landing visit (human choice 2026-10-25).
+- **Unresolved:** Human visual check of the 3D mark vs `/icon.png`. Do not treat that check as G7.
+- **Risks:** Dual WebGL if the hero hydrates during the intro; first-paint flash if `data-intro` is set after paint; existing E2E must skip or reduce motion.
+- **Next owner:** Sofía Herrera (g6-intro-overlay, g6-hero-handoff, g6-verify).

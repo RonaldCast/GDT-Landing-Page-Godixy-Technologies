@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { hydrated, revealsSettled } from './helpers';
+import { hydrated, openLanding, revealsSettled } from './helpers';
 
 test('health endpoint and security headers', async ({ request }) => {
   const health = await request.get('/api/health');
@@ -21,7 +21,7 @@ test('no CSP violations or console errors while using the page', async ({ page }
     if (msg.type() === 'error') problems.push(msg.text());
   });
   page.on('pageerror', (err) => problems.push(err.message));
-  await page.goto('/en/');
+  await openLanding(page, '/en/');
   await hydrated(page, '#service-tab-cloud');
   await page.locator('#contact').scrollIntoViewIfNeeded();
   await hydrated(page, '#contact form');
@@ -29,7 +29,8 @@ test('no CSP violations or console errors while using the page', async ({ page }
 });
 
 test('skip link moves focus to main content (AC-04)', async ({ page }) => {
-  await page.goto('/en/');
+  await openLanding(page, '/en/');
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await page.keyboard.press('Tab');
   const skip = page.locator('a.skip-link');
   await expect(skip).toBeFocused();
@@ -39,7 +40,7 @@ test('skip link moves focus to main content (AC-04)', async ({ page }) => {
 });
 
 test('the 3D hero goes live with full motion', async ({ page }) => {
-  await page.goto('/en/');
+  await openLanding(page, '/en/');
   await expect(page.locator('.scene')).toHaveClass(/scene--live/, { timeout: 15_000 });
 });
 
@@ -58,7 +59,7 @@ test('reduced motion: static hero and content visible (AC-05)', async ({ browser
 
 for (const lang of ['en', 'es']) {
   test(`axe WCAG 2.2 AA scan (${lang})`, async ({ page }) => {
-    await page.goto(`/${lang}/`);
+    await openLanding(page, `/${lang}/`);
     await hydrated(page, '#contact form');
     await revealsSettled(page);
     const results = await new AxeBuilder({ page })

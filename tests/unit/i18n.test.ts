@@ -77,6 +77,13 @@ function leaves(value: unknown, path = ''): [string, string][] {
   return typeof value === 'string' ? [[path, value]] : [];
 }
 
+describe('intro copy', () => {
+  it('exposes skip and status in both languages', () => {
+    expect(en.intro.status.length).toBeGreaterThan(0);
+    expect(es.intro.status.length).toBeGreaterThan(0);
+  });
+});
+
 describe('dictionary parity (AC-03)', () => {
   it('EN and ES have identical keys and list lengths', () => {
     expect(shape(es)).toEqual(shape(en));

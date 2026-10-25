@@ -18,7 +18,7 @@ const { t } = Astro.props;
       <p class="hero__eyebrow enter enter--1">
         {t.eyebrow}
       </p>
-      <h1 id="hero-title" class="enter enter--2">
+      <h1 id="hero-title" class="enter enter--2" tabindex="-1">
         {t.titleLead} <span class="highlight">{t.titleHighlight}</span>{' '}{t.titleTail}
       </h1>
       <p class="hero__subtitle enter enter--3">{t.subtitle}</p>
@@ -137,8 +137,20 @@ const { t } = Astro.props;
     color: var(--color-teal-text);
   }
 
+  #hero-title:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
   .enter {
     animation: enter 800ms var(--ease-out) both;
+  }
+
+  :global(html[data-intro='playing']) .enter,
+  :global(html[data-intro='exiting']) .enter {
+    animation: none;
+    opacity: 0;
+    transform: translateY(24px);
   }
 
   .enter--2 {
@@ -160,7 +172,7 @@ const { t } = Astro.props;
   @keyframes enter {
     from {
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(24px);
     }
     to {
       opacity: 1;

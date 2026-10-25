@@ -142,6 +142,39 @@ textarea {
     center / 14px no-repeat;
 }
 
+html[data-intro='playing'],
+html[data-intro='exiting'] {
+  overflow: hidden;
+}
+
+[data-intro-root] {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  background:
+    radial-gradient(ellipse 42% 36% at 50% 46%, rgb(78 172 196 / 0.16), transparent 70%),
+    radial-gradient(ellipse 90% 80% at 50% 100%, rgb(16 30 56 / 0.4), transparent 55%),
+    #101e38;
+  color: var(--color-white);
+}
+
+html[data-intro='playing'] [data-intro-root],
+html[data-intro='exiting'] [data-intro-root] {
+  display: block;
+}
+
+html[data-intro='exiting'] [data-intro-root] {
+  animation: intro-exit 500ms var(--ease-out) forwards;
+}
+
+@keyframes intro-exit {
+  to {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
-import { hydrated } from './helpers';
+import { hydrated, openLanding } from './helpers';
 
 async function openForm(page: Page, lang = 'en') {
-  await page.goto(`/${lang}/#contact`);
+  await openLanding(page, `/${lang}/#contact`);
   await hydrated(page, '#contact form');
 }
 

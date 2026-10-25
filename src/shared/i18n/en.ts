@@ -37,6 +37,9 @@ export const en = {
     highlights: ['Explicit written scope', 'Acceptance criteria per milestone', 'Support after go-live'],
     sceneLabel: 'Animated illustration of modular blocks inspired by the Godixy logo',
   },
+  intro: {
+    status: 'Loading Godixy Technologies',
+  },
   pillars: {
     label: 'Why Godixy',
     title: 'A delivery model built on commitments you can check',

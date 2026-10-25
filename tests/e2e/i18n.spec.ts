@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { hydrated, scrolledTo } from './helpers';
+import { dismissIntro, hydrated, openLanding, scrolledTo } from './helpers';
 
 test.describe('language negotiation (AC-01)', () => {
   test('Spanish browser lands on /es/', async ({ request }) => {
@@ -23,15 +23,15 @@ test.describe('language negotiation (AC-01)', () => {
   });
 
   test('pages declare their language', async ({ page }) => {
-    await page.goto('/es/');
+    await openLanding(page, '/es/');
     await expect(page.locator('html')).toHaveAttribute('lang', 'es');
-    await page.goto('/en/');
+    await openLanding(page, '/en/');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   });
 });
 
 test('switching language keeps the section and persists (AC-02)', async ({ page, context }) => {
-  await page.goto('/en/');
+  await openLanding(page, '/en/');
   const es = await hydrated(page, 'header .lang a[hreflang="es"]');
   await page.evaluate(() => document.getElementById('process')?.scrollIntoView({ behavior: 'instant' }));
   await scrolledTo(page, '#process');
@@ -39,6 +39,7 @@ test('switching language keeps the section and persists (AC-02)', async ({ page,
   // click() would first scroll the sticky header link "into view", moving the page.
   await es.dispatchEvent('click');
   await page.waitForURL(/\/es\//);
+  await dismissIntro(page);
   expect(new URL(page.url()).hash).toBe('#process');
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
 
@@ -47,10 +48,11 @@ test('switching language keeps the section and persists (AC-02)', async ({ page,
 
   await page.goto('/');
   await expect(page).toHaveURL(/\/es\/$/);
+  await dismissIntro(page);
 });
 
 test('hreflang alternates and canonical (AC-25)', async ({ page }) => {
-  await page.goto('/en/');
+  await openLanding(page, '/en/');
   const alternates = page.locator('link[rel="alternate"][hreflang]');
   await expect(alternates).toHaveCount(3);
   await expect(page.locator('link[rel="alternate"][hreflang="es"]')).toHaveAttribute('href', /\/es\/$/);

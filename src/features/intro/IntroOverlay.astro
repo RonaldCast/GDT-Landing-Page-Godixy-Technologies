@@ -1,0 +1,39 @@
+---
+import IntroScene from './IntroScene.vue';
+
+interface Props {
+  status: string;
+}
+
+const { status } = Astro.props;
+---
+
+<script is:inline>
+  document.documentElement.dataset.intro = window.matchMedia(
+    '(prefers-reduced-motion: reduce)',
+  ).matches
+    ? 'done'
+    : 'playing';
+</script>
+
+<div
+  data-intro-root
+  class="intro"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="intro-status"
+>
+  <p id="intro-status" class="visually-hidden" role="status">{status}</p>
+  <IntroScene client:load />
+</div>
+
+<noscript>
+  <style>
+    [data-intro-root] {
+      display: none !important;
+    }
+    html {
+      overflow: auto !important;
+    }
+  </style>
+</noscript>

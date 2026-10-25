@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { hydrated } from './helpers';
+import { hydrated, openLanding } from './helpers';
 
 test('mobile menu opens, traps Escape and closes on navigation', async ({ page }) => {
-  await page.goto('/es/');
+  await openLanding(page, '/es/');
   const toggle = await hydrated(page, 'button[aria-controls="mobile-nav-panel"]');
   await expect(page.locator('header nav.desktop-nav')).toBeHidden();
 
@@ -22,7 +22,7 @@ test('mobile menu opens, traps Escape and closes on navigation', async ({ page }
 });
 
 test('no horizontal overflow on a phone', async ({ page }) => {
-  await page.goto('/en/');
+  await openLanding(page, '/en/');
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
 });
