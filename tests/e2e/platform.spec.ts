@@ -30,7 +30,11 @@ test('no CSP violations or console errors while using the page', async ({ page }
 
 test('skip link moves focus to main content (AC-04)', async ({ page }) => {
   await openLanding(page, '/en/');
-  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await page.evaluate(() => {
+    (document.activeElement as HTMLElement | null)?.blur();
+    document.documentElement.tabIndex = -1;
+    document.documentElement.focus();
+  });
   await page.keyboard.press('Tab');
   const skip = page.locator('a.skip-link');
   await expect(skip).toBeFocused();

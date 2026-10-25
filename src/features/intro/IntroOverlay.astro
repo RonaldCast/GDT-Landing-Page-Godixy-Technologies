@@ -8,14 +8,6 @@ interface Props {
 const { status } = Astro.props;
 ---
 
-<script is:inline>
-  document.documentElement.dataset.intro = window.matchMedia(
-    '(prefers-reduced-motion: reduce)',
-  ).matches
-    ? 'done'
-    : 'playing';
-</script>
-
 <div
   data-intro-root
   class="intro"

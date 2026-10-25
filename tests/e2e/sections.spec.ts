@@ -4,9 +4,22 @@ import { hydrated, openLanding } from './helpers';
 test('hero CTAs point to contact and services (AC-08)', async ({ page }) => {
   await openLanding(page, '/en/');
   const hero = page.locator('main section').first();
-  await expect(hero.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(
+    hero.getByRole('heading', {
+      level: 1,
+      name: 'Software that ships, runs in production and stays supported.',
+    }),
+  ).toBeVisible();
   await expect(hero.locator('a[href="#contact"]')).toBeVisible();
   await expect(hero.locator('a[href="#services"]')).toBeVisible();
+
+  await openLanding(page, '/es/');
+  await expect(
+    page.locator('main section').first().getByRole('heading', {
+      level: 1,
+      name: 'Software que se entrega, opera en producción y mantiene su soporte.',
+    }),
+  ).toBeVisible();
 });
 
 test('trust pillars show the three values (AC-09)', async ({ page }) => {

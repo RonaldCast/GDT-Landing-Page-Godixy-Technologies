@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { NavItem } from './nav-items';
 
 defineProps<{
@@ -11,8 +11,13 @@ defineProps<{
 }>();
 
 const open = ref(false);
+const ready = ref(false);
 const toggleRef = ref<HTMLButtonElement | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
+
+onMounted(() => {
+  ready.value = true;
+});
 
 function close(returnFocus = true) {
   open.value = false;
@@ -69,17 +74,19 @@ onBeforeUnmount(() => {
       <span class="bar" :class="{ 'bar--open': open }" aria-hidden="true"></span>
     </button>
 
-    <div id="mobile-nav-panel" ref="panelRef" :hidden="!open" class="mobile-nav__panel">
-      <nav :aria-label="navLabel">
-        <ul>
-          <li v-for="item in items" :key="item.id">
-            <a :href="item.href" @click="close(false)">{{ item.label }}</a>
-          </li>
-        </ul>
-      </nav>
-      <a class="mobile-nav__cta" href="#contact" @click="close(false)">{{ ctaLabel }}</a>
-      <slot />
-    </div>
+    <Teleport v-if="ready" to="body">
+      <div id="mobile-nav-panel" ref="panelRef" :hidden="!open" class="mobile-nav__panel">
+        <nav :aria-label="navLabel">
+          <ul>
+            <li v-for="item in items" :key="item.id">
+              <a :href="item.href" @click="close(false)">{{ item.label }}</a>
+            </li>
+          </ul>
+        </nav>
+        <a class="mobile-nav__cta" href="#contact" @click="close(false)">{{ ctaLabel }}</a>
+        <slot />
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -142,7 +149,7 @@ onBeforeUnmount(() => {
 .mobile-nav__panel {
   position: fixed;
   inset: var(--header-height) 0 0 0;
-  z-index: 1;
+  z-index: 60;
   display: flex;
   flex-direction: column;
   gap: var(--space-6);

@@ -11,7 +11,7 @@ interface Props {
 const { t } = Astro.props;
 ---
 
-<section class="hero" aria-labelledby="hero-title">
+<section class="hero" data-hero aria-labelledby="hero-title">
   <div class="hero__backdrop" aria-hidden="true"></div>
   <div class="container hero__grid">
     <div class="hero__copy">
@@ -19,9 +19,27 @@ const { t } = Astro.props;
         {t.eyebrow}
       </p>
       <h1 id="hero-title" class="enter enter--2" tabindex="-1">
-        {t.titleLead} <span class="highlight">{t.titleHighlight}</span>{' '}{t.titleTail}
+        <span class="hero__title-full visually-hidden">{t.titleAccessible}</span>
+        <span class="hero__title-rotator" aria-hidden="true">
+          <span class="hero__prefix">{t.titlePrefix}</span>
+          <span class="hero__phrases">
+            {
+              t.phrases.map((phrase, index) => (
+                <span class="hero__phrase highlight" data-hero-phrase data-active={index === 0 ? '' : undefined}>
+                  {phrase}
+                </span>
+              ))
+            }
+          </span>
+        </span>
       </h1>
-      <p class="hero__subtitle enter enter--3">{t.subtitle}</p>
+      <p class="hero__subtitle enter enter--3">
+        {
+          t.subtitle.map((part) =>
+            part.emphasis ? <strong class="hero__emphasis">{part.text}</strong> : part.text,
+          )
+        }
+      </p>
       <div class="hero__actions enter enter--4">
         <Button href="#contact" size="lg">
           {t.primaryCta}
@@ -35,6 +53,13 @@ const { t } = Astro.props;
     </div>
   </div>
 </section>
+
+<script>
+  import { startHeroPhrases } from './rotate-phrases';
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  if (hero) startHeroPhrases(hero);
+</script>
 
 <style>
   .hero {
@@ -84,19 +109,41 @@ const { t } = Astro.props;
     color: var(--color-teal-text);
   }
 
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-teal);
-    box-shadow: 0 0 0 4px rgb(78 172 196 / 0.2);
-  }
-
   h1 {
     font-size: var(--text-display);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.05;
+  }
+
+  .hero__title-rotator {
+    display: block;
+  }
+
+  .hero__prefix {
+    display: block;
+  }
+
+  .hero__phrases {
+    display: grid;
+    justify-items: start;
+  }
+
+  .hero__phrase {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(0.35em);
+    transition:
+      opacity 1200ms var(--ease-out),
+      transform 1200ms var(--ease-out),
+      visibility 1200ms;
+  }
+
+  .hero__phrase[data-active] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
   }
 
   .highlight {
@@ -112,29 +159,15 @@ const { t } = Astro.props;
     color: var(--color-muted);
   }
 
+  .hero__emphasis {
+    color: var(--color-navy);
+    font-weight: 700;
+  }
+
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
-  }
-
-  .hero__highlights {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-5);
-    font-size: 0.9375rem;
-    color: var(--color-muted);
-  }
-
-  .hero__highlights li {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-
-  .hero__highlights :global(svg) {
-    color: var(--color-teal-text);
   }
 
   #hero-title:focus {
@@ -165,10 +198,6 @@ const { t } = Astro.props;
     animation-delay: 240ms;
   }
 
-  .enter--5 {
-    animation-delay: 320ms;
-  }
-
   @keyframes enter {
     from {
       opacity: 0;
@@ -177,6 +206,22 @@ const { t } = Astro.props;
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__title-full.visually-hidden {
+      position: static !important;
+      width: auto;
+      height: auto;
+      margin: 0;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+    }
+
+    .hero__title-rotator {
+      display: none;
     }
   }
 
